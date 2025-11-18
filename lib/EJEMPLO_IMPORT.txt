@@ -1,0 +1,25 @@
+"""
+Ejemplo de cómo importar y usar las librerías propias desde los cuadernos
+"""
+
+# En tus cuadernos (notebooks en la carpeta cuadernos/), 
+# añade esto al inicio:
+
+# ============================================================
+# 1. Agregar la ruta del proyecto al sys.path
+# ============================================================
+import sys
+sys.path.insert(0, r'C:\Users\jmora\Documents\TFMDS')
+
+# ============================================================
+# 2. Importar las funciones de tus librerías propias
+# ============================================================
+from lib.ts_features import crear_lags, crear_media_movil, crear_ewma
+
+# ============================================================
+# 3. Usarlas en tu código
+# ============================================================
+# Ejemplo:
+# dfSTventas = crear_lags(dfSTventas, 'udsVenta', 'producto', num_lags=7)
+# dfSTventas['media_mes'] = crear_media_movil(dfSTventas, 'udsVenta', 'producto', ventana=30)
+# dfSTventas['EWMA_corto'] = crear_ewma(dfSTventas, 'udsVenta', 'producto', span=7)
