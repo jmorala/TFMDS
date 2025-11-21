@@ -151,7 +151,7 @@ def grafico_feature_importance(modelo, feature_names: list, top_n: int = 15,
 
 
 def grafico_comparacion_metricas(df_metricas: pd.DataFrame, 
-                                  metricas: list = ['MAE', 'RMSE', 'R2'],
+                                  metricas: list = None,
                                   figsize: tuple = (15, 5)):
     """
     Gráfico de barras comparando métricas entre modelos.

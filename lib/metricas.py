@@ -1,3 +1,9 @@
+"""
+Librería de métricas
+Autor: Joaquín Mora
+Fecha: 2025-11-21
+"""
+
 import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -123,11 +129,11 @@ def resumen_metricas(resultados: list) -> None:
     
     df = comparar_metricas(resultados)
     
-    print("\n" + "="*80)
+    print("\n" + "="*100)
     print("📊 RESUMEN DE MÉTRICAS")
-    print("="*80)
-    print(df.to_string(index=False))
-    print("="*80)
+    print("="*100)
+    print(df.to_string(col_space={'Algoritmo': 20}, index=False))
+    print("="*100)
     
     # Identificar mejor modelo (ignorando NaN/inf)
     df_valido = df.dropna(subset=['RMSE'])
