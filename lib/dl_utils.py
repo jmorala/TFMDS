@@ -172,8 +172,13 @@ def reconstruir_predicciones(y_hat: pd.DataFrame,
     # Copiar test original
     test_pred = df_test_original.copy()
     
+    # Copiar y_hat y resetear índice si unique_id está como índice
+    y_hat_work = y_hat.copy()
+    if 'unique_id' in y_hat_work.index.names or (y_hat_work.index.name == 'unique_id'):
+        y_hat_work = y_hat_work.reset_index()
+    
     # Renombrar columnas en y_hat para merge
-    y_hat_merge = y_hat[['unique_id', 'ds', modelo_name]].copy()
+    y_hat_merge = y_hat_work[['unique_id', 'ds', modelo_name]].copy()
     y_hat_merge = y_hat_merge.rename(columns={
         'unique_id': col_producto,
         'ds': col_fecha,
