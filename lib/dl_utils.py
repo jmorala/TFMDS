@@ -68,12 +68,6 @@ def preparar_datos_neuralforecast(df_train: pd.DataFrame,
     if not pd.api.types.is_datetime64_any_dtype(test['ds']):
         test['ds'] = pd.to_datetime(test['ds'])
     
-    print(f"\n✅ Datos preparados para NeuralForecast:")
-    print(f"   Train: {train.shape} | Productos: {train['unique_id'].nunique()}")
-    print(f"   Test:  {test.shape} | Productos: {test['unique_id'].nunique()}")
-    print(f"   Rango train: {train['ds'].min()} a {train['ds'].max()}")
-    print(f"   Rango test:  {test['ds'].min()} a {test['ds'].max()}")
-    
     return train, test
 
 

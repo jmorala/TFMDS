@@ -12,7 +12,6 @@ from . import metricas
 from . import graficos
 from . import graficos_dl
 from . import dl_utils
-from . import ts_features
 
 __all__ = [
     'metricas',
