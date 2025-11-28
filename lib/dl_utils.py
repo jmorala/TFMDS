@@ -147,9 +147,12 @@ def reconstruir_predicciones(y_hat: pd.DataFrame,
                              df_test_original: pd.DataFrame,
                              modelo_name: str,
                              col_producto: str = 'producto',
-                             col_fecha: str = 'idSecuencia') -> pd.DataFrame:
+                             col_fecha: str = 'idSecuencia',
+                             col_target: str = 'udsVenta',
+                             scaler_target_path: str = 'datos/scaler_target.pkl') -> pd.DataFrame:
     """
     Reconstruye DataFrame de test con predicciones en formato original.
+    Desnormaliza automáticamente las predicciones y el target si existe scaler.
     
     Parameters:
     -----------
@@ -163,12 +166,19 @@ def reconstruir_predicciones(y_hat: pd.DataFrame,
         Nombre de columna producto en dataset original
     col_fecha : str
         Nombre de columna fecha en dataset original
+    col_target : str
+        Nombre de columna objetivo (para desnormalizar)
+    scaler_target_path : str
+        Ruta al archivo scaler_target.pkl (None para no desnormalizar)
     
     Returns:
     --------
     pd.DataFrame
-        Dataset test con predicciones
+        Dataset test con predicciones desnormalizadas
     """
+    import pickle
+    import os
+    
     # Copiar test original
     test_pred = df_test_original.copy()
     
@@ -197,6 +207,47 @@ def reconstruir_predicciones(y_hat: pd.DataFrame,
         on=[col_producto, col_fecha],
         how='left'
     )
+    
+    # ============================================================
+    # DESNORMALIZACIÓN CON SCALER
+    # ============================================================
+    if scaler_target_path and os.path.exists(scaler_target_path):
+        print(f"\n🔄 Desnormalizando predicciones y target...")
+        
+        try:
+            # Cargar scaler
+            with open(scaler_target_path, 'rb') as f:
+                scaler_target = pickle.load(f)
+            
+            # Desnormalizar target (udsVenta)
+            if col_target in test_pred.columns:
+                test_pred[col_target] = scaler_target.inverse_transform(
+                    test_pred[[col_target]]
+                ).flatten()
+            
+            # Desnormalizar predicciones
+            mask_valid = test_pred['prediccion'].notna()
+            if mask_valid.sum() > 0:
+                test_pred.loc[mask_valid, 'prediccion'] = scaler_target.inverse_transform(
+                    test_pred.loc[mask_valid, ['prediccion']]
+                ).flatten()
+            
+            print(f"   ✅ Desnormalización completada")
+            print(f"   📊 Estadísticas desnormalizadas:")
+            print(f"      - {col_target}: min={test_pred[col_target].min():.2f}, "
+                  f"max={test_pred[col_target].max():.2f}, "
+                  f"mean={test_pred[col_target].mean():.2f}")
+            print(f"      - prediccion: min={test_pred['prediccion'].min():.2f}, "
+                  f"max={test_pred['prediccion'].max():.2f}, "
+                  f"mean={test_pred['prediccion'].mean():.2f}")
+            
+        except Exception as e:
+            print(f"   ⚠️ Error al desnormalizar: {e}")
+            print(f"   Las predicciones quedan en escala normalizada")
+    else:
+        if scaler_target_path:
+            print(f"\n⚠️ No se encontró scaler en: {scaler_target_path}")
+        print(f"   Las predicciones están en escala normalizada")
     
     print(f"\n✅ Predicciones reconstruidas:")
     print(f"   Shape: {test_pred.shape}")
@@ -270,3 +321,58 @@ def filtrar_productos_con_datos_suficientes(df: pd.DataFrame,
     print(f"   Productos eliminados: {n_eliminados}")
     
     return df_filtrado
+
+
+def preparar_variables_estaticas(df_train_nf: pd.DataFrame,
+                                 df_test_nf: pd.DataFrame,
+                                 stat_exog_list: List[str]) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Extrae variables estáticas (que no cambian en el tiempo) y las separa en un DataFrame aparte.
+    Elimina estas columnas de los datasets temporales.
+    
+    En NeuralForecast, las variables estáticas deben proporcionarse en un DataFrame separado
+    con una fila por unique_id, no repetidas en cada timestamp.
+    
+    Parameters:
+    -----------
+    df_train_nf : pd.DataFrame
+        Dataset de entrenamiento en formato NeuralForecast
+    df_test_nf : pd.DataFrame
+        Dataset de test en formato NeuralForecast
+    stat_exog_list : List[str]
+        Lista de nombres de columnas estáticas a extraer
+    
+    Returns:
+    --------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        - df_train_nf sin columnas estáticas
+        - df_test_nf sin columnas estáticas
+        - static_df: DataFrame con unique_id y variables estáticas
+    """
+    # Verificar que las columnas existen
+    columnas_faltantes = [col for col in stat_exog_list if col not in df_train_nf.columns]
+    if columnas_faltantes:
+        print(f"\n⚠️ Columnas no encontradas en train: {columnas_faltantes}")
+        stat_exog_list = [col for col in stat_exog_list if col in df_train_nf.columns]
+    
+    if not stat_exog_list:
+        print("\n⚠️ No hay columnas estáticas válidas para extraer")
+        return df_train_nf, df_test_nf, None
+    
+    # Crear DataFrame de variables estáticas (una fila por unique_id)
+    columnas_static = ['unique_id'] + stat_exog_list
+    static_df = df_train_nf[columnas_static].drop_duplicates('unique_id').reset_index(drop=True)
+    
+    # Eliminar columnas estáticas de los datasets temporales
+    df_train_clean = df_train_nf.drop(columns=stat_exog_list)
+    df_test_clean = df_test_nf.drop(columns=stat_exog_list)
+    
+    print(f"\n✅ Variables estáticas extraídas:")
+    print(f"   Columnas estáticas: {stat_exog_list}")
+    print(f"   Shape static_df: {static_df.shape}")
+    print(f"   Productos únicos: {static_df['unique_id'].nunique()}")
+    print(f"\n📊 Datasets temporales actualizados:")
+    print(f"   Train: {df_train_clean.shape} (eliminadas {len(stat_exog_list)} columnas)")
+    print(f"   Test:  {df_test_clean.shape} (eliminadas {len(stat_exog_list)} columnas)")
+    
+    return df_train_clean, df_test_clean, static_df
