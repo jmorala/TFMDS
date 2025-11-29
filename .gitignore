@@ -37,6 +37,9 @@ MANIFEST
 profile_default/
 ipython_config.py
 
+# PyTorch Lightning logs
+lightning_logs/
+
 # VS Code
 .vscode/
 *.code-workspace
