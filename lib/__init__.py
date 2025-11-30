@@ -17,6 +17,5 @@ __all__ = [
     'metricas',
     'graficos',
     'graficos_dl',
-    'dl_utils',
-    'ts_features'
+    'dl_utils'
 ]
