@@ -60,6 +60,7 @@ def grafico_scatter_prediccion(df: pd.DataFrame, col_real: str, col_pred: str,
     figsize : tuple
         Tamaño de la figura
     """
+    plt.style.use('seaborn-v0_8')
     plt.figure(figsize=figsize)
     
     plt.scatter(df[col_real], df[col_pred], alpha=0.5)
@@ -152,7 +153,7 @@ def grafico_feature_importance(modelo, feature_names: list, top_n: int = 15,
 
 def grafico_comparacion_metricas(df_metricas: pd.DataFrame, 
                                   metricas: list = None,
-                                  figsize: tuple = (15, 5)):
+                                  figsize: tuple = (15, 10)):
     """
     Gráfico de barras comparando métricas entre modelos.
     
