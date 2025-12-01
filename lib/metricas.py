@@ -8,23 +8,37 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-def calcular_metricas(y: pd.Series, y_pred: pd.Series, name: str) -> dict:
+def calcular_metricas(
+    y: pd.Series,
+    y_pred: pd.Series,
+    algoritmo: str,
+    ndetalle: str = "Global",
+    cluster=None,
+    producto=None,
+) -> dict:
     """
-    Calcula métricas de evaluación para modelos de series temporales.
-    
+    Calcula métricas de evaluación para modelos de series temporales e incluye
+    metadatos del experimento para facilitar comparaciones posteriores.
+
     Parameters:
     -----------
     y : pd.Series
         Valores reales
     y_pred : pd.Series
         Valores predichos
-    name : str
-        Nombre del algoritmo/modelo
-    
+    algoritmo : str
+        Nombre del algoritmo/modelo (obligatorio)
+    ndetalle : str, default="Global"
+        Nivel de detalle del modelo. Posibles valores: "Global", "Cluster", "Producto"
+    cluster : Any, optional
+        Identificador del cluster (si aplica)
+    producto : Any, optional
+        Identificador del producto (si aplica)
+
     Returns:
     --------
     dict
-        Diccionario con el nombre del algoritmo y las métricas calculadas
+        Diccionario con metadatos (Algoritmo, NDetalle, Cluster, Producto) y métricas calculadas
     """
     y_true = np.array(y)
     y_predicted = np.array(y_pred)
@@ -60,7 +74,10 @@ def calcular_metricas(y: pd.Series, y_pred: pd.Series, name: str) -> dict:
     mae_percentage = (mae / np.mean(y_true)) * 100 if np.mean(y_true) != 0 else np.inf
     
     return {
-        'Algoritmo': name,
+        'Algoritmo': algoritmo,
+        'NDetalle': ndetalle,
+        'Cluster': cluster,
+        'Producto': producto,
         'MAE': round(mae, 4),
         'MSE': round(mse, 4),
         'RMSE': round(rmse, 4),
@@ -132,7 +149,13 @@ def resumen_metricas(resultados: list) -> None:
     print("\n" + "="*100)
     print("📊 RESUMEN DE MÉTRICAS")
     print("="*100)
-    print(df.to_string(col_space={'Algoritmo': 20}, index=False))
+    # Reordenar columnas para visualización clara
+    cols = [
+        'Algoritmo', 'NDetalle', 'Cluster', 'Producto',
+        'MAE', 'RMSE', 'R2', 'MAPE (%)', 'SMAPE (%)', 'RMSSE', 'MAE (%)'
+    ]
+    cols_existentes = [c for c in cols if c in df.columns]
+    print(df[cols_existentes].to_string(index=False))
     print("="*100)
     
     # Identificar mejor modelo (ignorando NaN/inf)
