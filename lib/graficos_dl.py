@@ -38,6 +38,7 @@ def grafico_prediccion_diaria_agregada(df: pd.DataFrame,
     # Agregar por día
     df_daily = df.groupby(col_fecha)[[col_real, col_pred]].sum().reset_index()
     
+    plt.style.use('seaborn-v0_8')
     plt.figure(figsize=figsize)
     plt.plot(df_daily[col_fecha], df_daily[col_real], 
              label='Real', marker='o', markersize=4, linewidth=2, alpha=0.8)
@@ -402,5 +403,99 @@ def grafico_loss_entrenamiento(history: dict,
     plt.ylabel('Loss', fontsize=11)
     plt.legend(fontsize=10)
     plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+def dashboard_prediccion_dl(df, col_fecha='idSecuencia', col_real='udsVenta', 
+                           col_pred='prediccion', titulo_principal='Dashboard de Predicción',
+                           figsize=(14, 10)):
+    """
+    Dashboard completo de predicción con 6 gráficos.
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        DataFrame con predicciones y valores reales
+    col_fecha : str
+        Nombre de la columna de fecha
+    col_real : str
+        Nombre de la columna con valores reales
+    col_pred : str
+        Nombre de la columna con predicciones
+    titulo_principal : str
+        Título principal del dashboard
+    figsize : tuple
+        Tamaño de la figura
+    """
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+    
+    # Calcular error si no existe
+    if 'error' not in df.columns:
+        df = df.copy()
+        df['error'] = df[col_pred] - df[col_real]
+    
+    plt.style.use('seaborn-v0_8')
+
+    # Crear figura con subplots (2 filas, 2 columnas)
+    fig, axes = plt.subplots(2, 2, figsize=figsize)
+    fig.suptitle(titulo_principal, fontsize=16, fontweight='bold', y=0.995)
+    
+    # IMPORTANTE: Aplanar axes para acceso consistente
+    axes = axes.flatten()
+    
+    # Gráfico 1: Real vs Predicción temporal
+    ax1 = axes[0]
+    ax1.plot(df[col_fecha], df[col_real], 
+             label='Real', marker='o', markersize=3, linewidth=1.5)
+    ax1.plot(df[col_fecha], df[col_pred], 
+             label='Predicción', marker='x', markersize=3, linewidth=1.5)
+    ax1.set_title('Evolución Temporal: Real vs Predicción')
+    ax1.set_xlabel('Fecha')
+    ax1.set_ylabel('Unidades Vendidas')
+    ax1.tick_params(axis='x', rotation=45)
+    ax1.legend()
+    ax1.grid(alpha=0.3)
+    
+    # Gráfico 2: Scatter Real vs Predicción
+    ax2 = axes[1]
+    ax2.scatter(df[col_real], df[col_pred], alpha=0.6)
+    
+    # Línea de identidad (predicción perfecta)
+    min_val = min(df[col_real].min(), df[col_pred].min())
+    max_val = max(df[col_real].max(), df[col_pred].max())
+    ax2.plot([min_val, max_val], [min_val, max_val], 
+             'r--', linewidth=2, label='Predicción perfecta')
+    
+    ax2.set_title('Real vs Predicción (Scatter)')
+    ax2.set_xlabel('Valores Reales')
+    ax2.set_ylabel('Valores Predichos')
+    ax2.legend()
+    ax2.grid(alpha=0.3)
+    
+    # Gráfico 3: Distribución del Error
+    ax3 = axes[2]
+    ax3.hist(df['error'], bins=30, edgecolor='black', alpha=0.7)
+    ax3.axvline(x=0, color='red', linestyle='--', linewidth=2, label='Error = 0')
+    ax3.axvline(x=df['error'].mean(), color='green', linestyle='--', 
+                linewidth=2, label=f'Media = {df["error"].mean():.2f}')
+    ax3.set_title('Distribución del Error')
+    ax3.set_xlabel('Error (Predicción - Real)')
+    ax3.set_ylabel('Frecuencia')
+    ax3.legend()
+    ax3.grid(alpha=0.3)
+    
+    # Gráfico 4: Evolución del Error
+    ax4 = axes[3]
+    ax4.plot(df[col_fecha], df['error'], marker='o', markersize=3, linewidth=1)
+    ax4.axhline(y=0, color='red', linestyle='--', linewidth=2, alpha=0.7)
+    ax4.fill_between(df[col_fecha], df['error'], 0, alpha=0.3)
+    ax4.tick_params(axis='x', rotation=45)
+    ax4.set_title('Evolución Temporal del Error')
+    ax4.set_xlabel('Fecha')
+    ax4.set_ylabel('Error')
+    ax4.grid(alpha=0.3)
+
     plt.tight_layout()
     plt.show()
