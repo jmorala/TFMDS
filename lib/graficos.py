@@ -202,9 +202,10 @@ def grafico_comparacion_metricas(df_metricas: pd.DataFrame,
 def dashboard_prediccion(df: pd.DataFrame, col_fecha: str, col_real: str, 
                         col_pred: str, modelo=None, feature_names: list = None,
                         titulo_principal: str = 'Dashboard de Predicción',
-                        figsize: tuple = (15, 10)):
+                        figsize: tuple = (14, 10)):
     """
-    Dashboard completo con 4 gráficos: temporal, scatter, error y feature importance.
+    Dashboard completo con 5 gráficos: temporal, scatter, distribución del error, 
+    evolución del error y feature importance.
     
     Parameters:
     -----------
@@ -225,60 +226,90 @@ def dashboard_prediccion(df: pd.DataFrame, col_fecha: str, col_real: str,
     figsize : tuple
         Tamaño de la figura
     """
-    fig, axes = plt.subplots(2, 2, figsize=figsize)
-    fig.suptitle(titulo_principal, fontsize=16, fontweight='bold', y=0.995)
+    # Calcular error si no existe
+    if 'error' not in df.columns:
+        df = df.copy()
+        df['error'] = df[col_pred] - df[col_real]
     
-    # Gráfico 1: Real vs Predicción temporal
-    ax1 = axes[0, 0]
+    plt.style.use('seaborn-v0_8')
+    
+    # Crear figura con 3 filas y 2 columnas
+    fig = plt.figure(figsize=figsize)
+    gs = fig.add_gridspec(3, 2, hspace=0.4, wspace=0.3, 
+                          top=0.94, bottom=0.06, left=0.08, right=0.96)
+    fig.suptitle(titulo_principal, fontsize=16, fontweight='bold')
+    
+    # Gráfico 1: Real vs Predicción temporal (fila 0, col 0)
+    ax1 = fig.add_subplot(gs[0, 0])
     ax1.plot(df[col_fecha], df[col_real], 
              label='Real', marker='o', markersize=3, linewidth=1.5)
     ax1.plot(df[col_fecha], df[col_pred], 
              label='Predicción', marker='x', markersize=3, linewidth=1.5)
-    ax1.set_title('Real vs Predicción (Temporal)', fontweight='bold')
-    ax1.set_xlabel('Fecha')
-    ax1.set_ylabel('Unidades')
-    ax1.legend()
+    ax1.set_title('Evolución Temporal: Real vs Predicción', fontweight='bold', fontsize=11)
+    ax1.set_xlabel('Fecha', fontsize=9)
+    ax1.set_ylabel('Unidades Vendidas', fontsize=9)
+    ax1.legend(fontsize=8)
     ax1.grid(True, alpha=0.3)
-    ax1.tick_params(axis='x', rotation=45)
+    ax1.tick_params(axis='x', rotation=45, labelsize=8)
+    ax1.tick_params(axis='y', labelsize=8)
     
-    # Gráfico 2: Scatter
-    ax2 = axes[0, 1]
-    ax2.scatter(df[col_real], df[col_pred], alpha=0.5)
+    # Gráfico 2: Scatter (fila 0, col 1)
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.scatter(df[col_real], df[col_pred], alpha=0.6)
     min_val = min(df[col_real].min(), df[col_pred].min())
     max_val = max(df[col_real].max(), df[col_pred].max())
-    ax2.plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=2)
-    ax2.set_title('Real vs Predicción (Scatter)', fontweight='bold')
-    ax2.set_xlabel('Ventas Reales')
-    ax2.set_ylabel('Ventas Predichas')
+    ax2.plot([min_val, max_val], [min_val, max_val], 
+             'r--', linewidth=2, label='Predicción perfecta')
+    ax2.set_title('Real vs Predicción (Scatter)', fontweight='bold', fontsize=11)
+    ax2.set_xlabel('Valores Reales', fontsize=9)
+    ax2.set_ylabel('Valores Predichos', fontsize=9)
+    ax2.legend(fontsize=8)
     ax2.grid(True, alpha=0.3)
+    ax2.tick_params(labelsize=8)
     
-    # Gráfico 3: Distribución del error
-    ax3 = axes[1, 0]
+    # Gráfico 3: Distribución del error (fila 1, col 0)
+    ax3 = fig.add_subplot(gs[1, 0])
     ax3.hist(df['error'], bins=30, edgecolor='black', alpha=0.7)
-    ax3.axvline(x=0, color='r', linestyle='--', linewidth=2)
-    ax3.axvline(x=df['error'].mean(), color='g', linestyle='--', linewidth=2)
-    ax3.set_title('Distribución del Error', fontweight='bold')
-    ax3.set_xlabel('Error (Predicción - Real)')
-    ax3.set_ylabel('Frecuencia')
-    ax3.grid(True, alpha=0.3, axis='y')
+    ax3.axvline(x=0, color='red', linestyle='--', linewidth=2, label='Error = 0')
+    ax3.axvline(x=df['error'].mean(), color='green', linestyle='--', 
+                linewidth=2, label=f'Media = {df["error"].mean():.2f}')
+    ax3.set_title('Distribución del Error', fontweight='bold', fontsize=11)
+    ax3.set_xlabel('Error (Predicción - Real)', fontsize=9)
+    ax3.set_ylabel('Frecuencia', fontsize=9)
+    ax3.legend(fontsize=8)
+    ax3.grid(True, alpha=0.3)
+    ax3.tick_params(labelsize=8)
     
-    # Gráfico 4: Feature Importance
-    ax4 = axes[1, 1]
+    # Gráfico 4: Evolución temporal del error (fila 1, col 1)
+    ax4 = fig.add_subplot(gs[1, 1])
+    ax4.plot(df[col_fecha], df['error'], marker='o', markersize=3, linewidth=1)
+    ax4.axhline(y=0, color='red', linestyle='--', linewidth=2, alpha=0.7)
+    ax4.fill_between(df[col_fecha], df['error'], 0, alpha=0.3)
+    ax4.set_title('Evolución Temporal del Error', fontweight='bold', fontsize=11)
+    ax4.set_xlabel('Fecha', fontsize=9)
+    ax4.set_ylabel('Error', fontsize=9)
+    ax4.grid(True, alpha=0.3)
+    ax4.tick_params(axis='x', rotation=45, labelsize=8)
+    ax4.tick_params(axis='y', labelsize=8)
+    
+    # Gráfico 5: Feature Importance (fila 2, ocupa ambas columnas)
+    ax5 = fig.add_subplot(gs[2, :])
     if modelo is not None and feature_names is not None:
         feature_importance = pd.DataFrame({
             'feature': feature_names,
             'importance': modelo.feature_importances_
-        }).sort_values('importance', ascending=False).head(10)
+        }).sort_values('importance', ascending=False).head(15)
         
-        ax4.barh(feature_importance['feature'], feature_importance['importance'])
-        ax4.set_title('Top 10 Features Importantes', fontweight='bold')
-        ax4.set_xlabel('Importancia')
-        ax4.invert_yaxis()
-        ax4.grid(True, alpha=0.3, axis='x')
+        ax5.bar(feature_importance['feature'], feature_importance['importance'])
+        ax5.set_title('Top 15 Features Importantes', fontweight='bold', fontsize=11)
+        ax5.set_ylabel('Importancia', fontsize=9)
+        ax5.set_xlabel('Features', fontsize=9)
+        ax5.grid(True, alpha=0.3, axis='y')
+        ax5.tick_params(axis='x', rotation=45, labelsize=8)
+        ax5.tick_params(axis='y', labelsize=8)
     else:
-        ax4.text(0.5, 0.5, 'Feature Importance\nno disponible', 
+        ax5.text(0.5, 0.5, 'Feature Importance\nno disponible', 
                 ha='center', va='center', fontsize=12)
-        ax4.set_title('Feature Importance', fontweight='bold')
+        ax5.set_title('Feature Importance', fontweight='bold', fontsize=11)
     
-    plt.tight_layout()
     plt.show()

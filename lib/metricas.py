@@ -197,3 +197,91 @@ def agregar_estadisticas_error(df: pd.DataFrame, col_real: str,
     df.loc[mask, 'error_pct'] = (df.loc[mask, 'error'] / df.loc[mask, col_real]) * 100
     
     return df
+
+
+def resumen_final_modelos(todas_metricas: list) -> None:
+    """
+    Genera un resumen completo de todas las métricas de modelos con tablas detalladas
+    por algoritmo y nivel de detalle.
+    
+    Parameters:
+    -----------
+    todas_metricas : list
+        Lista de diccionarios con métricas de todos los modelos evaluados.
+        Cada diccionario debe contener: Algoritmo, NDetalle, Cluster, Producto y métricas.
+    """
+    print("\n" + "="*100)
+    print("🏆 RESUMEN FINAL - COMPARACIÓN DE TODOS LOS MODELOS")
+    print("="*100)
+
+    if todas_metricas:
+        # Tabla completa de métricas con metadatos
+        print("\n📊 Resumen de todas las métricas (todas las columnas):")
+        df_comparacion_final = pd.DataFrame(todas_metricas).copy()
+
+        # Asegurar columnas y ordenar por Algoritmo y NDetalle (y RMSE ascendente dentro)
+        columnas = [
+            'Algoritmo', 'NDetalle', 'Cluster', 'Producto',
+            'MAE', 'MSE', 'RMSE', 'R2', 'MAPE (%)', 'SMAPE (%)', 'RMSSE', 'MAE (%)'
+        ]
+        cols_exist = [c for c in columnas if c in df_comparacion_final.columns]
+
+        # Reemplazar inf por NaN para ordenar correctamente
+        df_comparacion_final = df_comparacion_final.replace([np.inf, -np.inf], np.nan)
+
+        # Orden: Algoritmo, NDetalle, RMSE
+        orden_cols = [c for c in ['Algoritmo', 'NDetalle', 'RMSE'] if c in df_comparacion_final.columns]
+        df_comparacion_final = df_comparacion_final.sort_values(orden_cols, ascending=[True, True, True])
+
+        print(df_comparacion_final[cols_exist].to_string(index=False))
+
+        # Resúmenes por NDetalle
+        print("\n" + "="*100)
+        print("📊 ANÁLISIS POR CATEGORÍAS DE MODELOS (NDetalle)")
+        print("="*100)
+
+        for nivel in ['Global', 'Cluster', 'Producto']:
+            dfn = df_comparacion_final[df_comparacion_final['NDetalle'] == nivel]
+            print(f"\n🔹 {nivel.upper()}:")
+            if len(dfn) > 0:
+                cols_nivel = ['Algoritmo', 'NDetalle', 'Cluster', 'Producto', 'MAE', 'MSE', 'RMSE', 'R2', 'MAPE (%)']
+                print(dfn[[c for c in cols_nivel if c in dfn.columns]].to_string(index=False))
+                print(f"\n   Promedio RMSE: {dfn['RMSE'].mean():.2f}")
+                if nivel == 'Cluster':
+                    print(f"   Mejor cluster: {dfn.loc[dfn['RMSE'].idxmin(), 'Cluster']} (RMSE: {dfn['RMSE'].min():.2f})")
+                    print(f"   Peor cluster: {dfn.loc[dfn['RMSE'].idxmax(), 'Cluster']} (RMSE: {dfn['RMSE'].max():.2f})")
+                if nivel == 'Producto':
+                    best_idx = dfn['RMSE'].idxmin()
+                    worst_idx = dfn['RMSE'].idxmax()
+                    print(f"   Mejor producto: C{dfn.loc[best_idx, 'Cluster']} P{dfn.loc[best_idx, 'Producto']} (RMSE: {dfn['RMSE'].min():.2f})")
+                    print(f"   Peor producto: C{dfn.loc[worst_idx, 'Cluster']} P{dfn.loc[worst_idx, 'Producto']} (RMSE: {dfn['RMSE'].max():.2f})")
+
+        # Mejor modelo general (por RMSE)
+        print("\n" + "="*100)
+        print("🥇 MEJOR MODELO GENERAL (RMSE mínimo)")
+        print("="*100)
+        mejor_idx = df_comparacion_final['RMSE'].idxmin()
+        mejor_modelo = df_comparacion_final.loc[mejor_idx]
+
+        print(f"\n🏆 {mejor_modelo['Algoritmo']} | {mejor_modelo['NDetalle']}")
+        print(f"   Cluster:    {mejor_modelo.get('Cluster', None)}")
+        print(f"   Producto:   {mejor_modelo.get('Producto', None)}")
+        print(f"   MAE:        {mejor_modelo['MAE']:.2f}")
+        print(f"   MSE:        {mejor_modelo['MSE']:.2f}")
+        print(f"   RMSE:       {mejor_modelo['RMSE']:.2f}")
+        print(f"   R²:         {mejor_modelo['R2']:.4f}")
+        print(f"   MAPE:       {mejor_modelo['MAPE (%)']:.2f}%")
+        print(f"   SMAPE:      {mejor_modelo['SMAPE (%)']:.2f}%")
+        print(f"   RMSSE:      {mejor_modelo['RMSSE']:.2f}")
+        print(f"   MAE (%):    {mejor_modelo['MAE (%)']:.2f}")
+
+    else:
+        print("\n⚠️  No se generaron métricas para ningún modelo")
+
+    print("\n" + "="*100)
+    print("✅ ANÁLISIS COMPLETO FINALIZADO")
+    print("="*100)
+    print(f"\n📊 Total de modelos evaluados: {len(todas_metricas)}")
+    print(f"   - Modelos globales: {len([m for m in todas_metricas if m.get('NDetalle') == 'Global'])}")
+    print(f"   - Modelos por cluster: {len([m for m in todas_metricas if m.get('NDetalle') == 'Cluster'])}")
+    print(f"   - Modelos por producto: {len([m for m in todas_metricas if m.get('NDetalle') == 'Producto'])}")
