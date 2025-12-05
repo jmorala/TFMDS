@@ -1,2 +1,0 @@
-Algoritmo,MAE,MSE,RMSE,R2,MAPE (%),SMAPE (%),RMSSE,MAE (%)
-VanillaTransformer,1.296,7.2559,2.6937,-0.075,85.98,184.65,0.8324,95.63
