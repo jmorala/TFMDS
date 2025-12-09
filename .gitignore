@@ -38,6 +38,7 @@ ipython_config.py
 
 # PyTorch Lightning logs
 lightning_logs/
+catboost_info/
 
 # VS Code
 .vscode/
