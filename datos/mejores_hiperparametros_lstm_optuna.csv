@@ -1,2 +1,0 @@
-input_size,encoder_hidden_size,encoder_n_layers,decoder_hidden_size,decoder_layers,context_size,learning_rate,batch_size,scaler_type,max_steps,best_mae_validation
-75,128,2,64,2,15,0.0020858895954663018,16,robust,800,1.1706382166479217
