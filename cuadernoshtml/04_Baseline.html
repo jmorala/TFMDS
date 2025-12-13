@@ -1,0 +1,489 @@
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=ac621338">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Este comando descarga el repositorio entero a una carpeta llamada 'TFMDS' en Colab.</span>
+<span class="c1">#!git clone https://github.com/jmorala/TFMDS.git</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=87b0c7bb"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Inicializar-directorios">Inicializar directorios<a class="anchor-link" href="#Inicializar-directorios">¶</a></h1><p>Clonar repositorio github
+Posicionarse en el directorio raíz</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=cbd9b9b6">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># Detectar si estamos en Google Colab</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">google.colab</span>
+    <span class="n">IN_COLAB</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">IN_COLAB</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># Configurar el directorio de trabajo según el entorno</span>
+<span class="k">if</span> <span class="n">IN_COLAB</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">'TFMDS'</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Detectar si estamos en Codespaces o VS Code local</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">'/workspaces/TFMDS'</span><span class="p">):</span>
+        <span class="c1"># Entorno Codespaces</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">'/workspaces/TFMDS'</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># En VS Code local, nos movemos al directorio raíz del proyecto</span>
+        <span class="c1"># Usa raw string para evitar errores de escape en rutas Windows</span>
+        <span class="n">current_dir</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'C:\Users\jmora\Documents\TFMDS'</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span>
+
+<span class="c1"># OPCIONAL: Para verificar que estás en la ruta correcta y ver las carpetas</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Directorio de trabajo actual:"</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Directorio de trabajo actual: C:\Users\jmora\Documents\TFMDS
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=afe106bb"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Lectura-de-fichero-y-adaptaci%C3%B3n-de-los-tipos">Lectura de fichero y adaptación de los tipos<a class="anchor-link" href="#Lectura-de-fichero-y-adaptaci%C3%B3n-de-los-tipos">¶</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=2c110528">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># Ruta relativa del archivo CSV</span>
+<span class="n">RUTA_DATOS_TRAIN</span> <span class="o">=</span> <span class="s1">'datos/df_train.csv'</span>
+
+<span class="c1"># Cargar el archivo en un DataFrame de Pandas</span>
+<span class="n">dfSTventasTrain</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">RUTA_DATOS_TRAIN</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">';'</span><span class="p">,</span>
+    <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">'idSecuencia'</span><span class="p">])</span>
+
+<span class="c1"># Cargar el conjunto de datos de prueba</span>
+<span class="n">RUTA_DATOS_TEST</span> <span class="o">=</span> <span class="s1">'datos/df_test.csv'</span>
+<span class="n">dfSTventasTest</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">RUTA_DATOS_TEST</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">';'</span><span class="p">,</span>
+    <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">'idSecuencia'</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=59244cbd"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Generar-dataframes-para-distintos-tests">Generar dataframes para distintos tests<a class="anchor-link" href="#Generar-dataframes-para-distintos-tests">¶</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=bedb7224">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Filtrar filas donde blOpen == 0 (tienda cerrada) - no incluir en predicciones</span>
+<span class="n">dfSTventasTrain</span> <span class="o">=</span> <span class="n">dfSTventasTrain</span><span class="p">[</span><span class="n">dfSTventasTrain</span><span class="p">[</span><span class="s1">'bolOpen'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dfSTventasTest</span> <span class="o">=</span> <span class="n">dfSTventasTest</span><span class="p">[</span><span class="n">dfSTventasTest</span><span class="p">[</span><span class="s1">'bolOpen'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"✅ Filas eliminadas donde blOpen == 0 (tienda cerrada)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   dfSTventasTrain: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dfSTventasTrain</span><span class="p">)</span><span class="si">}</span><span class="s2"> registros"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   dfSTventasTest: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dfSTventasTest</span><span class="p">)</span><span class="si">}</span><span class="s2"> registros"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>✅ Filas eliminadas donde blOpen == 0 (tienda cerrada)
+   dfSTventasTrain: 521202 registros
+   dfSTventasTest: 23244 registros
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=9dc16597"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Naive">Naive<a class="anchor-link" href="#Naive">¶</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=a1c10886">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># ============================================================================</span>
+<span class="c1"># MÉTODO NAIVE: Predicciones basadas en el último valor observado del train</span>
+<span class="c1"># ============================================================================</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lib.metricas</span><span class="w"> </span><span class="kn">import</span> <span class="n">calcular_metricas</span><span class="p">,</span> <span class="n">resumen_metricas</span><span class="p">,</span> <span class="n">resumen_final_modelos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lib.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">obtener_top_productos_por_cluster</span>
+
+<span class="n">metricas_naive</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># acumulador de resultados</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># PASO 0: Calcular predicciones NAIVE a nivel de PRODUCTO INDIVIDUAL</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># Para cada producto, usar el último valor del train como predicción para todos los días del test</span>
+<span class="n">df_test_naive</span> <span class="o">=</span> <span class="n">dfSTventasTest</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">df_train_ultimo</span> <span class="o">=</span> <span class="n">dfSTventasTrain</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'producto'</span><span class="p">)[</span><span class="s1">'udsVenta'</span><span class="p">]</span><span class="o">.</span><span class="n">last</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">df_train_ultimo</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'ultimo_valor'</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Merge para obtener el último valor por producto</span>
+<span class="n">df_test_naive</span> <span class="o">=</span> <span class="n">df_test_naive</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_train_ultimo</span><span class="p">[[</span><span class="s1">'producto'</span><span class="p">,</span> <span class="s1">'ultimo_valor'</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s1">'producto'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
+<span class="n">df_test_naive</span><span class="p">[</span><span class="s1">'prediccion_naive'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_test_naive</span><span class="p">[</span><span class="s1">'ultimo_valor'</span><span class="p">]</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># 1. NAIVE SOBRE VENTAS DIARIAS TOTALES (GLOBAL)</span>
+<span class="c1"># Agregar predicciones y reales por día</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="n">df_test_daily</span> <span class="o">=</span> <span class="n">df_test_naive</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'sum'</span><span class="p">,</span>
+    <span class="s1">'prediccion_naive'</span><span class="p">:</span> <span class="s1">'sum'</span>
+<span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+<span class="n">met_total</span> <span class="o">=</span> <span class="n">calcular_metricas</span><span class="p">(</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">df_test_daily</span><span class="p">[</span><span class="s1">'udsVenta'</span><span class="p">],</span>
+    <span class="n">y_pred</span><span class="o">=</span><span class="n">df_test_daily</span><span class="p">[</span><span class="s1">'prediccion_naive'</span><span class="p">],</span>
+    <span class="n">algoritmo</span><span class="o">=</span><span class="s1">'NAIVE'</span><span class="p">,</span> <span class="n">ndetalle</span><span class="o">=</span><span class="s1">'Global'</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">producto</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="n">metricas_naive</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_total</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># 2. NAIVE POR CLUSTER</span>
+<span class="c1"># Agregar predicciones y reales por día y cluster</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="n">clusters</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df_test_naive</span><span class="p">[</span><span class="s1">'Cluster'</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+<span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">clusters</span><span class="p">:</span>
+    <span class="n">df_test_cl</span> <span class="o">=</span> <span class="n">df_test_naive</span><span class="p">[</span><span class="n">df_test_naive</span><span class="p">[</span><span class="s1">'Cluster'</span><span class="p">]</span> <span class="o">==</span> <span class="n">cl</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">df_test_cl</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"⚠️ Cluster </span><span class="si">{</span><span class="n">cl</span><span class="si">}</span><span class="s2"> sin datos en test. Se omite."</span><span class="p">)</span>
+        <span class="k">continue</span>
+    
+    <span class="n">df_test_cl_daily</span> <span class="o">=</span> <span class="n">df_test_cl</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+        <span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'sum'</span><span class="p">,</span>
+        <span class="s1">'prediccion_naive'</span><span class="p">:</span> <span class="s1">'sum'</span>
+    <span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    
+    <span class="n">met_cl</span> <span class="o">=</span> <span class="n">calcular_metricas</span><span class="p">(</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">df_test_cl_daily</span><span class="p">[</span><span class="s1">'udsVenta'</span><span class="p">],</span>
+        <span class="n">y_pred</span><span class="o">=</span><span class="n">df_test_cl_daily</span><span class="p">[</span><span class="s1">'prediccion_naive'</span><span class="p">],</span>
+        <span class="n">algoritmo</span><span class="o">=</span><span class="s1">'NAIVE'</span><span class="p">,</span> <span class="n">ndetalle</span><span class="o">=</span><span class="s1">'Global'</span><span class="p">,</span>
+        <span class="n">cluster</span><span class="o">=</span><span class="n">cl</span><span class="p">,</span> <span class="n">producto</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">metricas_naive</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_cl</span><span class="p">)</span>
+    
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># 3. NAIVE POR PRODUCTOS TOP (2 productos por cluster según ventas totales en train)</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+
+<span class="n">top_productos</span> <span class="o">=</span> <span class="n">obtener_top_productos_por_cluster</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">dfSTventasTrain</span><span class="p">,</span>
+    <span class="n">col_ventas</span><span class="o">=</span><span class="s1">'udsVenta'</span><span class="p">,</span>
+    <span class="n">col_cluster</span><span class="o">=</span><span class="s1">'Cluster'</span><span class="p">,</span>
+    <span class="n">col_producto</span><span class="o">=</span><span class="s1">'producto'</span><span class="p">,</span>
+    <span class="n">n_productos</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">productos</span> <span class="ow">in</span> <span class="n">top_productos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">producto</span> <span class="ow">in</span> <span class="n">productos</span><span class="p">:</span>
+        <span class="c1"># Filtrar datos de test para este producto y cluster</span>
+        <span class="n">df_test_prod</span> <span class="o">=</span> <span class="n">df_test_naive</span><span class="p">[(</span><span class="n">df_test_naive</span><span class="p">[</span><span class="s1">'Cluster'</span><span class="p">]</span> <span class="o">==</span> <span class="n">cluster</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_test_naive</span><span class="p">[</span><span class="s1">'producto'</span><span class="p">]</span> <span class="o">==</span> <span class="n">producto</span><span class="p">)]</span>
+        
+        <span class="k">if</span> <span class="n">df_test_prod</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"⚠️ Producto </span><span class="si">{</span><span class="n">producto</span><span class="si">}</span><span class="s2"> en Cluster </span><span class="si">{</span><span class="n">cluster</span><span class="si">}</span><span class="s2"> sin datos en test. Se omite."</span><span class="p">)</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># Agrupar por día</span>
+        <span class="n">df_test_prod_daily</span> <span class="o">=</span> <span class="n">df_test_prod</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+            <span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'sum'</span><span class="p">,</span>
+            <span class="s1">'prediccion_naive'</span><span class="p">:</span> <span class="s1">'sum'</span>
+        <span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        
+        <span class="c1"># Calcular métricas</span>
+        <span class="n">metricas_producto</span> <span class="o">=</span> <span class="n">calcular_metricas</span><span class="p">(</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">df_test_prod_daily</span><span class="p">[</span><span class="s1">'udsVenta'</span><span class="p">],</span>
+            <span class="n">y_pred</span><span class="o">=</span><span class="n">df_test_prod_daily</span><span class="p">[</span><span class="s1">'prediccion_naive'</span><span class="p">],</span>
+            <span class="n">algoritmo</span><span class="o">=</span><span class="s1">'NAIVE'</span><span class="p">,</span>
+            <span class="n">ndetalle</span><span class="o">=</span><span class="s1">'Global'</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="n">cluster</span><span class="p">,</span> <span class="n">producto</span><span class="o">=</span><span class="n">producto</span><span class="p">)</span>
+        <span class="n">metricas_naive</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metricas_producto</span><span class="p">)</span>
+
+
+<span class="n">resumen_metricas</span><span class="p">(</span><span class="n">metricas_naive</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+====================================================================================================
+📊 RESUMEN DE MÉTRICAS
+====================================================================================================
+Algoritmo NDetalle  Cluster  Producto      MAE     RMSE      R2  MAPE (%)  SMAPE (%)  RMSSE  MAE (%)
+    NAIVE   Global      3.0     314.0   0.0000   0.0000  1.0000       NaN       0.00    NaN      NaN
+    NAIVE   Global      3.0     257.0   0.5000   1.2558 -0.1884    100.00     200.00 0.8544   100.00
+    NAIVE   Global      0.0     413.0   1.6154   2.2014 -0.0012     23.93      98.66 0.7706    77.78
+    NAIVE   Global      1.0      41.0   3.3846   4.5319 -0.0073     72.57      57.62 0.7736    51.16
+    NAIVE   Global      2.0       2.0   3.6154   4.5742 -0.0234     75.79      65.31 0.6355    57.32
+    NAIVE   Global      1.0     144.0   3.9615   5.1103 -0.0166     67.27      85.17 0.7638    70.07
+    NAIVE   Global      0.0     294.0   7.3846   7.6912 -6.4162    228.63     150.61 1.7719   400.00
+    NAIVE   Global      2.0       1.0   7.3462  12.1323 -0.1863     71.59      66.46 0.7638    62.21
+    NAIVE   Global      2.0       NaN  20.5000  28.3868 -0.0836    100.21      28.28 0.6976    22.31
+    NAIVE   Global      3.0       NaN  76.3462 102.4025 -0.0301     37.37      23.19 0.6638    19.96
+    NAIVE   Global      1.0       NaN  88.9615 132.3336 -0.5716     51.16      23.87 0.7435    22.01
+    NAIVE   Global      0.0       NaN  98.9615 153.3792 -0.0479     38.32      19.74 0.6405    17.03
+    NAIVE   Global      NaN       NaN 228.2308 377.5667 -0.0564     38.82      18.65 0.6329    15.63
+====================================================================================================
+
+🏆 Mejor modelo: NAIVE (RMSE: 0.0000)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=f07b2e30"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Media-de-7-d%C3%ADas">Media de 7 días<a class="anchor-link" href="#Media-de-7-d%C3%ADas">¶</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=d572ac18">
+<div class="input">
+<div class="prompt input_prompt">In [18]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># ============================================================================</span>
+<span class="c1"># MÉTODO MEDIA 7 DÍAS: Predicción = media de los últimos 7 días del train</span>
+<span class="c1"># ============================================================================</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lib.metricas</span><span class="w"> </span><span class="kn">import</span> <span class="n">calcular_metricas</span><span class="p">,</span> <span class="n">resumen_metricas</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">WINDOW</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">metricas_media7</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="s2">"="</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"🧮 MEDIA MÓVIL BASE (</span><span class="si">{</span><span class="n">WINDOW</span><span class="si">}</span><span class="s2"> días) - Baseline"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"="</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># PASO 0: Calcular predicciones MEDIA 7 a nivel de PRODUCTO INDIVIDUAL</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># Para cada producto, usar la media de los últimos 7 días del train como predicción</span>
+<span class="n">df_test_media7</span> <span class="o">=</span> <span class="n">dfSTventasTest</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">df_train_sorted</span> <span class="o">=</span> <span class="n">dfSTventasTrain</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span>
+<span class="n">df_train_media7</span> <span class="o">=</span> <span class="n">df_train_sorted</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'producto'</span><span class="p">,</span> <span class="n">group_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="n">WINDOW</span><span class="p">))</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df_train_media7_per_product</span> <span class="o">=</span> <span class="n">df_train_media7</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'producto'</span><span class="p">)[</span><span class="s1">'udsVenta'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">df_train_media7_per_product</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'media7_valor'</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Merge para obtener la media 7 días por producto</span>
+<span class="n">df_test_media7</span> <span class="o">=</span> <span class="n">df_test_media7</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_train_media7_per_product</span><span class="p">[[</span><span class="s1">'producto'</span><span class="p">,</span> <span class="s1">'media7_valor'</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s1">'producto'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
+<span class="n">df_test_media7</span><span class="p">[</span><span class="s1">'prediccion_media7'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_test_media7</span><span class="p">[</span><span class="s1">'media7_valor'</span><span class="p">]</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># 1. MEDIA 7 DÍAS SOBRE VENTAS DIARIAS TOTALES (GLOBAL)</span>
+<span class="c1"># Agregar predicciones y reales por día</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="n">df_test_daily</span> <span class="o">=</span> <span class="n">df_test_media7</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'sum'</span><span class="p">,</span>
+    <span class="s1">'prediccion_media7'</span><span class="p">:</span> <span class="s1">'sum'</span>
+<span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+<span class="n">met_total</span> <span class="o">=</span> <span class="n">calcular_metricas</span><span class="p">(</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">df_test_daily</span><span class="p">[</span><span class="s1">'udsVenta'</span><span class="p">],</span>
+    <span class="n">y_pred</span><span class="o">=</span><span class="n">df_test_daily</span><span class="p">[</span><span class="s1">'prediccion_media7'</span><span class="p">],</span>
+    <span class="n">algoritmo</span><span class="o">=</span><span class="s1">'MEDIA7'</span><span class="p">,</span> <span class="n">ndetalle</span><span class="o">=</span><span class="s1">'Global'</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">producto</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="n">metricas_media7</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_total</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># 2. MEDIA 7 DÍAS POR CLUSTER</span>
+<span class="c1"># Agregar predicciones y reales por día y cluster</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="n">clusters</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df_test_media7</span><span class="p">[</span><span class="s1">'Cluster'</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+<span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">clusters</span><span class="p">:</span>
+    <span class="n">df_test_cl</span> <span class="o">=</span> <span class="n">df_test_media7</span><span class="p">[</span><span class="n">df_test_media7</span><span class="p">[</span><span class="s1">'Cluster'</span><span class="p">]</span> <span class="o">==</span> <span class="n">cl</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">df_test_cl</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"⚠️ Cluster </span><span class="si">{</span><span class="n">cl</span><span class="si">}</span><span class="s2"> sin datos en test. Se omite."</span><span class="p">)</span>
+        <span class="k">continue</span>
+    
+    <span class="n">df_test_cl_daily</span> <span class="o">=</span> <span class="n">df_test_cl</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+        <span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'sum'</span><span class="p">,</span>
+        <span class="s1">'prediccion_media7'</span><span class="p">:</span> <span class="s1">'sum'</span>
+    <span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    
+    <span class="n">met_cl</span> <span class="o">=</span> <span class="n">calcular_metricas</span><span class="p">(</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">df_test_cl_daily</span><span class="p">[</span><span class="s1">'udsVenta'</span><span class="p">],</span>
+        <span class="n">y_pred</span><span class="o">=</span><span class="n">df_test_cl_daily</span><span class="p">[</span><span class="s1">'prediccion_media7'</span><span class="p">],</span>
+        <span class="n">algoritmo</span><span class="o">=</span><span class="s1">'MEDIA7'</span><span class="p">,</span> <span class="n">ndetalle</span><span class="o">=</span><span class="s1">'Global'</span><span class="p">,</span>
+        <span class="n">cluster</span><span class="o">=</span><span class="n">cl</span><span class="p">,</span> <span class="n">producto</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">metricas_media7</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_cl</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------</span>
+<span class="c1"># 3. MEDIA 7 DÍAS POR PRODUCTOS TOP (2 productos por cluster según ventas totales en train)</span>
+<span class="c1"># ---------------------------------------------------------------</span>
+
+<span class="n">top_productos</span> <span class="o">=</span> <span class="n">obtener_top_productos_por_cluster</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">dfSTventasTrain</span><span class="p">,</span>
+    <span class="n">col_ventas</span><span class="o">=</span><span class="s1">'udsVenta'</span><span class="p">,</span>
+    <span class="n">col_cluster</span><span class="o">=</span><span class="s1">'Cluster'</span><span class="p">,</span>
+    <span class="n">col_producto</span><span class="o">=</span><span class="s1">'producto'</span><span class="p">,</span>
+    <span class="n">n_productos</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">productos</span> <span class="ow">in</span> <span class="n">top_productos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">producto</span> <span class="ow">in</span> <span class="n">productos</span><span class="p">:</span>
+        <span class="c1"># Filtrar datos de test para este producto y cluster</span>
+        <span class="n">df_test_prod</span> <span class="o">=</span> <span class="n">df_test_media7</span><span class="p">[(</span><span class="n">df_test_media7</span><span class="p">[</span><span class="s1">'Cluster'</span><span class="p">]</span> <span class="o">==</span> <span class="n">cluster</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_test_media7</span><span class="p">[</span><span class="s1">'producto'</span><span class="p">]</span> <span class="o">==</span> <span class="n">producto</span><span class="p">)]</span>
+        
+        <span class="k">if</span> <span class="n">df_test_prod</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"⚠️ Producto </span><span class="si">{</span><span class="n">producto</span><span class="si">}</span><span class="s2"> en Cluster </span><span class="si">{</span><span class="n">cluster</span><span class="si">}</span><span class="s2"> sin datos en test. Se omite."</span><span class="p">)</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># Agrupar por día</span>
+        <span class="n">df_test_prod_daily</span> <span class="o">=</span> <span class="n">df_test_prod</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'idSecuencia'</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+            <span class="s1">'udsVenta'</span><span class="p">:</span> <span class="s1">'sum'</span><span class="p">,</span>
+            <span class="s1">'prediccion_media7'</span><span class="p">:</span> <span class="s1">'sum'</span>
+        <span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        
+        <span class="c1"># Calcular métricas</span>
+        <span class="n">metricas_producto</span> <span class="o">=</span> <span class="n">calcular_metricas</span><span class="p">(</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">df_test_prod_daily</span><span class="p">[</span><span class="s1">'udsVenta'</span><span class="p">],</span>
+            <span class="n">y_pred</span><span class="o">=</span><span class="n">df_test_prod_daily</span><span class="p">[</span><span class="s1">'prediccion_media7'</span><span class="p">],</span>
+            <span class="n">algoritmo</span><span class="o">=</span><span class="s1">'MEDIA7'</span><span class="p">,</span> <span class="n">ndetalle</span><span class="o">=</span><span class="s1">'Global'</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="n">cluster</span><span class="p">,</span> <span class="n">producto</span><span class="o">=</span><span class="n">producto</span><span class="p">)</span>
+        <span class="n">metricas_media7</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metricas_producto</span><span class="p">)</span>
+
+<span class="n">resumen_metricas</span><span class="p">(</span><span class="n">metricas_media7</span><span class="p">)</span>
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># CONSOLIDAR Y GUARDAR TODAS LAS MÉTRICAS BASELINE</span>
+<span class="c1"># ============================================================================</span>
+
+<span class="c1"># Combinar métricas de NAIVE y MEDIA7</span>
+<span class="n">todas_metricas_baseline</span> <span class="o">=</span> <span class="n">metricas_naive</span> <span class="o">+</span> <span class="n">metricas_media7</span>
+
+<span class="c1"># Guardar resultados consolidados</span>
+<span class="n">df_resultados_baseline</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">todas_metricas_baseline</span><span class="p">)</span>
+<span class="n">output_path_baseline</span> <span class="o">=</span> <span class="s1">'datos/resultados_metricas_baseline.csv'</span>
+<span class="n">df_resultados_baseline</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path_baseline</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💾 Todas las métricas Baseline guardadas en: </span><span class="si">{</span><span class="n">output_path_baseline</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Total de registros: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">todas_metricas_baseline</span><span class="p">)</span><span class="si">}</span><span class="s2"> (NAIVE + MEDIA7)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"="</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+====================================================================================================
+🧮 MEDIA MÓVIL BASE (7 días) - Baseline
+====================================================================================================
+
+====================================================================================================
+📊 RESUMEN DE MÉTRICAS
+====================================================================================================
+Algoritmo NDetalle  Cluster  Producto      MAE     RMSE      R2  MAPE (%)  SMAPE (%)  RMSSE  MAE (%)
+   MEDIA7   Global      3.0     314.0   0.0000   0.0000  1.0000       NaN       0.00    NaN      NaN
+   MEDIA7   Global      3.0     257.0   0.5000   1.2558 -0.1884    100.00     200.00 0.8544   100.00
+   MEDIA7   Global      0.0     413.0   1.8462   2.2280 -0.0255     34.41     102.48 0.7799    88.89
+   MEDIA7   Global      0.0     294.0   2.0000   2.8284 -0.0030     27.90     127.35 0.6516   108.33
+   MEDIA7   Global      2.0       2.0   3.8901   4.7352 -0.0968     86.62      67.42 0.6579    61.67
+   MEDIA7   Global      1.0     144.0   4.4670   5.3701 -0.1226     99.97      84.34 0.8027    79.01
+   MEDIA7   Global      1.0      41.0   4.3297   5.6105 -0.5437     57.19      82.94 0.9577    65.45
+   MEDIA7   Global      2.0       1.0   7.6209  12.4326 -0.2457     68.78      70.43 0.7827    64.54
+   MEDIA7   Global      2.0       NaN  19.0385  27.8102 -0.0400    101.37      26.43 0.6834    20.72
+   MEDIA7   Global      3.0       NaN  70.8846 108.3525 -0.1533     41.47      21.26 0.7023    18.53
+   MEDIA7   Global      1.0       NaN  80.9615 108.5245 -0.0570     39.49      23.43 0.6097    20.03
+   MEDIA7   Global      0.0       NaN 108.3462 150.3246 -0.0066     37.08      21.55 0.6277    18.64
+   MEDIA7   Global      NaN       NaN 243.3297 367.3671 -0.0001     37.54      19.84 0.6158    16.67
+====================================================================================================
+
+🏆 Mejor modelo: MEDIA7 (RMSE: 0.0000)
+
+💾 Todas las métricas Baseline guardadas en: datos/resultados_metricas_baseline.csv
+   Total de registros: 26 (NAIVE + MEDIA7)
+====================================================================================================
+
+====================================================================================================
+📊 RESUMEN DE MÉTRICAS
+====================================================================================================
+Algoritmo NDetalle  Cluster  Producto      MAE     RMSE      R2  MAPE (%)  SMAPE (%)  RMSSE  MAE (%)
+   MEDIA7   Global      3.0     314.0   0.0000   0.0000  1.0000       NaN       0.00    NaN      NaN
+   MEDIA7   Global      3.0     257.0   0.5000   1.2558 -0.1884    100.00     200.00 0.8544   100.00
+   MEDIA7   Global      0.0     413.0   1.8462   2.2280 -0.0255     34.41     102.48 0.7799    88.89
+   MEDIA7   Global      0.0     294.0   2.0000   2.8284 -0.0030     27.90     127.35 0.6516   108.33
+   MEDIA7   Global      2.0       2.0   3.8901   4.7352 -0.0968     86.62      67.42 0.6579    61.67
+   MEDIA7   Global      1.0     144.0   4.4670   5.3701 -0.1226     99.97      84.34 0.8027    79.01
+   MEDIA7   Global      1.0      41.0   4.3297   5.6105 -0.5437     57.19      82.94 0.9577    65.45
+   MEDIA7   Global      2.0       1.0   7.6209  12.4326 -0.2457     68.78      70.43 0.7827    64.54
+   MEDIA7   Global      2.0       NaN  19.0385  27.8102 -0.0400    101.37      26.43 0.6834    20.72
+   MEDIA7   Global      3.0       NaN  70.8846 108.3525 -0.1533     41.47      21.26 0.7023    18.53
+   MEDIA7   Global      1.0       NaN  80.9615 108.5245 -0.0570     39.49      23.43 0.6097    20.03
+   MEDIA7   Global      0.0       NaN 108.3462 150.3246 -0.0066     37.08      21.55 0.6277    18.64
+   MEDIA7   Global      NaN       NaN 243.3297 367.3671 -0.0001     37.54      19.84 0.6158    16.67
+====================================================================================================
+
+🏆 Mejor modelo: MEDIA7 (RMSE: 0.0000)
+
+💾 Todas las métricas Baseline guardadas en: datos/resultados_metricas_baseline.csv
+   Total de registros: 26 (NAIVE + MEDIA7)
+====================================================================================================
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>C:\Users\jmora\AppData\Local\Temp\ipykernel_17996\957561924.py:22: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  df_train_media7 = df_train_sorted.groupby('producto', group_keys=False).apply(lambda x: x.tail(WINDOW)).reset_index(drop=True)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
